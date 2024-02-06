@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:retrofit_riverpod_practice/post_state.dart';
-
 import '../model/post.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -10,36 +9,25 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    PostState state = ref.watch(postsProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Home Screen"),
+        title: const Text("Home Screen"),
       ),
       body: Center(
-        child: Consumer(
-          builder: (BuildContext context, WidgetRef ref, Widget? child) {
-            PostState state = ref.watch(postsProvider);
-
-            if (state is InitialPostState) {
-              return Text("Press FAB to Fetch Data");
-            }
-            if (state is PostLoadingState) {
-              return CircularProgressIndicator();
-            }
-            if (state is PostLoadedState) {
-              return _buildListView(state);
-            }
-            if (state is ErrorPostState) {
-              return Text(state.message);
-            }
-            return Text("Nothing Found");
-          },
-        ),
+        child: switch (state) {
+          (InitialPostState _) => const Text("Click to fetch data"),
+          (PostLoadingState _) => const CircularProgressIndicator(),
+          (PostLoadedState state) => _buildListView(state),
+          _ => const Text("Something went wrong")
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // read Used to obtain the current value of a provider without subscribing to future changes.
           ref.read(postsProvider.notifier).fetchPosts();
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

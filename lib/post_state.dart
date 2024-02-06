@@ -1,11 +1,12 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:retrofit_riverpod_practice/api_service.dart';
+import 'package:retrofit_riverpod_practice/api/api_service.dart';
+import 'package:retrofit_riverpod_practice/providers/dio_provider.dart';
 import 'model/post.dart';
 
 final postsProvider = StateNotifierProvider<PostsNotifier, PostState>(
-  (ref) => PostsNotifier(),
+  (ref) => PostsNotifier(ref.watch(
+      apiClientProvider)), //watch Used to subscribe to a provider and rebuild your widget whenever its value changes.
 );
 
 @immutable
@@ -27,14 +28,11 @@ class ErrorPostState extends PostState {
   final String message;
 }
 
+//uses riverpod StateNotifier provider
 class PostsNotifier extends StateNotifier<PostState> {
-  PostsNotifier() : super(InitialPostState());
+  final ApiClient _apiClient;
 
-  final ApiClient _apiClient = ApiClient(
-    Dio(
-      BaseOptions(contentType: "application/json"),
-    ),
-  );
+  PostsNotifier(this._apiClient) : super(InitialPostState());
 
   void fetchPosts() async {
     try {
